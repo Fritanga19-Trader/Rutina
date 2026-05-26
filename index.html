@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EDGE">
+<meta name="theme-color" content="#0a0a0a">
+<title>EDGE</title>
+<script>
+(function(){
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#0a0a0a"/><polyline points="52,390 136,306 212,348 316,196 460,84" stroke="#1fbb8a" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/><polygon points="52,390 136,306 212,348 316,196 460,84 460,390" fill="#1fbb8a" fill-opacity="0.15"/><circle cx="460" cy="84" r="38" fill="#1fbb8a"/><line x1="52" y1="390" x2="460" y2="390" stroke="rgba(255,255,255,0.12)" stroke-width="8"/></svg>';
+  var url = 'data:image/svg+xml;base64,' + btoa(svg);
+  var link1 = document.createElement('link'); link1.rel = 'apple-touch-icon'; link1.href = url;
+  var link2 = document.createElement('link'); link2.rel = 'icon'; link2.type = 'image/svg+xml'; link2.href = url;
+  document.head.appendChild(link1);
+  document.head.appendChild(link2);
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0a0a0a; --bg2: #141414; --bg3: #1c1c1c;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+    --text: #f0ede8; --text2: rgba(240,237,232,0.55); --text3: rgba(240,237,232,0.3);
+    --green: #1fbb8a; --green-dim: rgba(31,187,138,0.12);
+    --amber: #f0a830; --amber-dim: rgba(240,168,48,0.12);
+    --blue: #5b9cf6; --blue-dim: rgba(91,156,246,0.12);
+    --font-display: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-display); overflow: hidden; }
+  #app { display: flex; flex-direction: column; height: 100dvh; max-width: 430px; margin: 0 auto; }
+
+  /* HEADER */
+  .header { padding: 52px 20px 14px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .header-row { display: flex; align-items: flex-start; justify-content: space-between; }
+  .header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+  .header-title span { color: var(--green); }
+  .header-date { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .header-right { text-align: right; }
+  .header-pct { font-size: 26px; font-weight: 700; font-family: var(--font-mono); color: var(--green); line-height: 1; }
+  .header-pct-label { font-size: 10px; color: var(--text3); font-family: var(--font-mono); margin-top: 2px; }
+  .weekend-badge { font-family: var(--font-mono); font-size: 11px; color: var(--blue); background: var(--blue-dim); border: 0.5px solid rgba(91,156,246,0.25); border-radius: 5px; padding: 3px 8px; margin-top: 4px; display: inline-block; }
+  .progress-bar { height: 2px; background: var(--border); margin: 12px 0 0; border-radius: 1px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 1px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+
+  /* TABS */
+  .tabs { display: flex; padding: 0 20px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
+  .tab { flex: 1; padding: 11px 0; font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text3); cursor: pointer; border-bottom: 1.5px solid transparent; transition: all 0.15s; text-align: center; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  /* SCROLL */
+  .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 24px; }
+  .scroll::-webkit-scrollbar { display: none; }
+
+  /* BLOCKS */
+  .block { padding: 16px 20px 0; }
+  .block-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; }
+  .item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; margin-bottom: 6px; cursor: pointer; transition: background 0.12s, border-color 0.12s, transform 0.1s; }
+  .item:active { transform: scale(0.98); }
+  .item.done { background: var(--green-dim); border-color: rgba(31,187,138,0.22); }
+  .item.skip { background: var(--bg2); border-color: var(--border); opacity: 0.4; cursor: default; }
+  .check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-top: 1px; }
+  .item.done .check { background: var(--green); border-color: var(--green); }
+  .item.skip .check { background: var(--bg3); border-color: var(--border); }
+  .check svg { opacity: 0; transform: scale(0.5); transition: all 0.15s; }
+  .item.done .check svg { opacity: 1; transform: scale(1); }
+  .item-body { flex: 1; min-width: 0; }
+  .item-time { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.04em; margin-bottom: 2px; }
+  .item-title { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.3; transition: color 0.15s; }
+  .item.done .item-title { color: var(--text2); }
+  .item-sub { font-size: 12px; color: var(--text3); margin-top: 4px; line-height: 1.45; }
+  .item-tag { display: inline-block; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; padding: 2px 6px; border-radius: 4px; margin-top: 5px; }
+  .item-tag.blue { background: var(--blue-dim); color: var(--blue); border: 0.5px solid rgba(91,156,246,0.2); }
+  .item-tag.amber { background: var(--amber-dim); color: var(--amber); border: 0.5px solid rgba(240,168,48,0.2); }
+  .item-tag.gray { background: var(--bg3); color: var(--text3); border: 0.5px solid var(--border); }
+
+  /* RULES */
+  .rules-toggle { margin: 14px 20px 0; padding: 12px 14px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .rules-toggle span { font-family: var(--font-mono); font-size: 11px; color: var(--text2); letter-spacing: 0.06em; text-transform: uppercase; }
+  .rules-toggle svg { color: var(--text3); transition: transform 0.2s; flex-shrink: 0; }
+  .rules-toggle.open svg { transform: rotate(180deg); }
+  .rules-body { margin: 0 20px; padding: 14px; background: var(--bg2); border: 0.5px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; display: none; }
+  .rules-body.open { display: block; }
+  .rule-row { display: flex; gap: 8px; font-size: 12px; color: var(--text2); margin-bottom: 6px; line-height: 1.4; }
+  .rule-row:last-child { margin-bottom: 0; }
+  .rules-divider { height: 0.5px; background: var(--border); margin: 10px 0; }
+
+  /* QUOTE */
+  .quote { margin: 16px 20px 0; padding: 16px; background: var(--bg2); border: 0.5px solid var(--border); border-left: 2px solid var(--green); border-radius: 10px; }
+  .quote-text { font-size: 13px; color: var(--text2); line-height: 1.6; font-style: italic; }
+
+  /* INSTALL BANNER */
+  .install-banner { margin: 12px 20px 0; padding: 13px 14px; background: var(--amber-dim); border: 0.5px solid rgba(240,168,48,0.25); border-radius: 10px; display: flex; align-items: center; gap: 10px; }
+  .install-banner-text { font-size: 12px; color: var(--amber); line-height: 1.4; flex: 1; }
+  .install-banner-close { font-size: 20px; color: var(--amber); cursor: pointer; opacity: 0.7; flex-shrink: 0; }
+
+  /* HISTORIAL */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 20px 0; }
+  .stat { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; padding: 14px; }
+  .stat-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+  .stat-value { font-size: 26px; font-weight: 700; font-family: var(--font-mono); color: var(--text); line-height: 1; }
+  .stat-value.green { color: var(--green); }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: var(--font-mono); }
+  .streak-bar { margin: 14px 20px 0; }
+  .streak-bar-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+  .streak-dots { display: flex; gap: 3px; flex-wrap: wrap; }
+  .streak-dot { width: 10px; height: 10px; border-radius: 2px; background: var(--bg3); }
+  .streak-dot.on { background: var(--green); }
+  .streak-dot.weekend { background: var(--blue-dim); border: 0.5px solid rgba(91,156,246,0.3); }
+  .cal-wrap { margin: 14px 20px 0; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-month { font-size: 14px; font-weight: 500; }
+  .cal-nav { display: flex; gap: 4px; }
+  .cal-nav-btn { width: 28px; height: 28px; border-radius: 6px; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .day-names { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; margin-bottom: 4px; }
+  .day-name { font-family: var(--font-mono); font-size: 10px; color: var(--text3); text-align: center; padding: 3px 0; }
+  .day-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+  .dc { aspect-ratio: 1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+  .dc.past-none { background: var(--bg2); border: 0.5px solid var(--border); }
+  .dc.past-partial { background: var(--amber-dim); color: var(--amber); border: 0.5px solid rgba(240,168,48,0.2); }
+  .dc.past-full { background: var(--green-dim); color: var(--green); border: 0.5px solid rgba(31,187,138,0.25); }
+  .dc.today { border: 1.5px solid var(--green); color: var(--text); font-weight: 500; }
+  .dc.future { color: var(--text3); opacity: 0.35; }
+  .dc.empty { background: transparent; }
+  .dc.is-weekend { opacity: 0.5; }
+  .legend { display: flex; gap: 12px; margin: 10px 0 0; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--text3); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-row">
+      <div>
+        <div class="header-title">⚔️ Camino a <span>Funded</span></div>
+        <div class="header-date" id="dateStr"></div>
+      </div>
+      <div class="header-right">
+        <div class="header-pct" id="headerPct">0%</div>
+        <div class="header-pct-label" id="headerPctLabel">completado</div>
+        <div class="weekend-badge" id="weekendBadge" style="display:none">FIN DE SEMANA</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" id="tabHoy" onclick="showView('hoy')">Hoy</div>
+    <div class="tab" id="tabHistorial" onclick="showView('historial')">Historial</div>
+  </div>
+
+  <div class="scroll">
+    <div id="viewHoy" class="view active">
+      <div id="installBanner" class="install-banner" style="display:none">
+        <div class="install-banner-text">📲 Añade esta app a tu pantalla de inicio: Compartir → "Añadir a pantalla de inicio"</div>
+        <div class="install-banner-close" onclick="closeBanner()">×</div>
+      </div>
+      <div id="routineList"></div>
+      <div class="rules-toggle" id="rulesToggle" onclick="toggleRules()">
+        <span>⚠️ Reglas no negociables</span>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="rules-body" id="rulesBody">
+        <div class="rule-row"><span style="color:#e05555;flex-shrink:0">✕</span> Revenge trade · Overtrading · Operar por aburrimiento</div>
+        <div class="rule-row"><span style="color:#e05555;flex-shrink:0">✕</span> Operar con check emocional por debajo de 6</div>
+        <div class="rule-row"><span style="color:#e05555;flex-shrink:0">✕</span> Cambiar el sistema sin 100 repeticiones de datos</div>
+        <div class="rule-row"><span style="color:#e05555;flex-shrink:0">✕</span> Subir riesgo tras pérdida · Mirar P&L en operación abierta</div>
+        <div class="rule-row"><span style="color:#e05555;flex-shrink:0">✕</span> Compararte con otros traders en redes</div>
+        <div class="rules-divider"></div>
+        <div class="rule-row"><span style="color:var(--green);flex-shrink:0">✓</span> Journal todos los días que operes</div>
+        <div class="rule-row"><span style="color:var(--green);flex-shrink:0">✓</span> Puntuación basada en proceso, no en resultado</div>
+        <div class="rule-row"><span style="color:var(--green);flex-shrink:0">✓</span> Revisión semanal los viernes sin excepción</div>
+        <div class="rule-row"><span style="color:var(--green);flex-shrink:0">✓</span> Celebrar buena ejecución aunque el trade pierda</div>
+        <div class="rule-row"><span style="color:var(--green);flex-shrink:0">✓</span> Pensar en años, no en días</div>
+      </div>
+      <div class="quote"><div class="quote-text" id="quoteText"></div></div>
+      <div style="height:24px"></div>
+    </div>
+
+    <div id="viewHistorial" class="view">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">Días ✓</div><div class="stat-value green" id="statFull">0</div><div class="stat-sub">100% completados</div></div>
+        <div class="stat"><div class="stat-label">Racha</div><div class="stat-value green" id="statStreak">0</div><div class="stat-sub">días seguidos</div></div>
+        <div class="stat"><div class="stat-label">Tasa 30d</div><div class="stat-value" id="statRate">—</div><div class="stat-sub">días completados</div></div>
+        <div class="stat"><div class="stat-label">Mejor racha</div><div class="stat-value" id="statBest">0</div><div class="stat-sub">días consecutivos</div></div>
+      </div>
+      <div class="streak-bar">
+        <div class="streak-bar-label">Últimos 30 días</div>
+        <div class="streak-dots" id="streakDots"></div>
+      </div>
+      <div class="cal-wrap">
+        <div class="cal-header">
+          <div class="cal-month" id="calMonth"></div>
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+            <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+          </div>
+        </div>
+        <div class="day-names">
+          <div class="day-name">L</div><div class="day-name">M</div><div class="day-name">X</div>
+          <div class="day-name">J</div><div class="day-name">V</div>
+          <div class="day-name" style="color:var(--blue);opacity:0.5">S</div>
+          <div class="day-name" style="color:var(--blue);opacity:0.5">D</div>
+        </div>
+        <div class="day-grid" id="dayGrid"></div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green-dim);border:0.5px solid rgba(31,187,138,0.3)"></div>Completo</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--amber-dim);border:0.5px solid rgba(240,168,48,0.3)"></div>Parcial</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--bg2);border:0.5px solid var(--border)"></div>Sin datos</div>
+        </div>
+      </div>
+      <div style="height:24px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── ROUTINE DATA ───────────────────────────────────────────────
+// dow: array of JS day numbers (0=Sun,1=Mon,...,6=Sat). null = every weekday
+const WEEKDAY_ROUTINE = [
+  { block: "🌅 Mañana", items: [
+    { id:"despertar", time:"07:30", title:"Despertar", sub:"Agua 300ml · Sin móvil 20 min · Luz natural · Hacer la cama" },
+    { id:"activacion", time:"07:50", title:"Activación física y mental", sub:"Movilidad articular + box breathing 4-4-4-4 · o Meditación 15 min + visualización" },
+    { id:"desayuno", time:"08:10", title:"Desayuno limpio", sub:"Proteína + grasas + carbohidrato lento · Sin móvil · Café después de comer" },
+  ]},
+  { block: "📊 Pre-mercado", items: [
+    { id:"premarket", time:"08:30", title:"Preparación pre-mercado", sub:"Check emocional 1-10 · Bias HTF D1/H4 · Forex Factory · Escenarios A/B · Qué NO operar hoy" },
+  ]},
+  { block: "📈 Sesión Londres", items: [
+    { id:"londres", time:"09:00", title:"Sesión Londres", sub:"Solo setups A+ · Riesgo fijo · Máx 2-3 trades · Sin mirar P&L · Drawdown máximo → cierra" },
+    { id:"review_lon", time:"11:30", title:"Review Londres", sub:"Screenshots · Journal · Emociones · ¿Seguiste las reglas? · Puntuación de proceso" },
+  ]},
+  { block: "🏋️ Cuerpo", items: [
+    { id:"gym", time:"12:00", title:"Gimnasio", sub:"Registro de progreso · En días difíciles: activación y descompresión, no destruirte", dow:[1,2,3,4,5] },
+  ]},
+  { block: "🍽️ Reset", items: [
+    { id:"comida", time:"13:15", title:"Comida + descanso", sub:"Sin pantallas ni gráficos · 10-15 min ojos cerrados después de comer" },
+  ]},
+  { block: "🇺🇸 Sesión NY", items: [
+    { id:"preny", time:"14:00", title:"Pre-NY", sub:"¿Cambió el bias? · Check emocional · Si buen día en Londres → considera no operar" },
+    { id:"ny", time:"14:15", title:"Sesión NY", sub:"Mismas reglas que Londres · Con 2+ trades encima el umbral sube, no baja" },
+    { id:"review_ny", time:"16:30", title:"Review NY + Cierre del día", sub:"Journal completo · Puntuación final · Cierra los gráficos — el mercado ha terminado" },
+  ]},
+  { block: "🔬 Estudio del Edge", items: [
+    { id:"edge_back", time:"17:00", title:"Backtesting / Replay", sub:"Mínimo 20-30 repeticiones del setup · FX Replay o TradingView Replay", dow:[1,3], tag:"LUN · MIÉ", tagType:"blue" },
+    { id:"edge_psico", time:"17:00", title:"Psicología del trading", sub:"Lectura, notas y aplicación a tus trades de la semana", dow:[3], tag:"MIÉ", tagType:"blue" },
+    { id:"revision_semanal", time:"17:00", title:"Revisión semanal profunda", sub:"Todas las operaciones · Patrón de errores · Adherencia a reglas · 1 mejora concreta para la semana siguiente", dow:[5], tag:"VIE", tagType:"amber" },
+  ]},
+  { block: "🚶 Descompresión", items: [
+    { id:"caminata", time:"18:00", title:"Caminata", sub:"Sin gráficos · Sin sobrepensar · Si el día fue duro es obligatoria · Podcasts opcionales" },
+  ]},
+  { block: "📖 Crecimiento", items: [
+    { id:"lectura", time:"19:00", title:"Lectura", sub:"Mínimo 20 páginas · Trading in the Zone · Atomic Habits · Psychology of Money", dow:[1,3], tag:"LUN · MIÉ", tagType:"blue" },
+    { id:"finanzas", time:"19:00", title:"Finanzas personales e inversión", sub:"Gestión de capital · Activos · Inversión pasiva · Construir patrimonio", dow:[2], tag:"MAR", tagType:"blue" },
+    { id:"negocios", time:"19:00", title:"Negocios y emprendimiento", sub:"Libros, podcasts o cursos de negocios y mentalidad empresarial", dow:[4], tag:"JUE", tagType:"blue" },
+  ]},
+  { block: "🌙 Cierre", items: [
+    { id:"estira_noche", time:"21:00", title:"Estiramientos suaves", sub:"15 min · Cuello, hombros, espalda · Relajar sistema nervioso" },
+    { id:"cierre", time:"21:15", title:"Protocolo de cierre", sub:"Preparar día siguiente · Escribe 1 cosa que hiciste bien hoy (en papel) · Sin gráficos ni redes" },
+    { id:"dormir", time:"22:30", title:"Dormir (7.5–8h)", sub:"Sueño = el suplemento más barato y más potente que existe" },
+  ]},
+];
+
+const WEEKEND_ROUTINE = {
+  6: [ // Sábado
+    { block: "🌅 Mañana libre", items: [
+      { id:"we_despertar", time:"08:00", title:"Despertar sin alarma", sub:"Deja que el cuerpo descanse lo que necesite" },
+      { id:"we_desayuno", time:"08:30", title:"Desayuno largo y tranquilo", sub:"Sin prisa, sin pantallas, disfruta el momento" },
+    ]},
+    { block: "📖 Crecimiento", items: [
+      { id:"we_lectura", time:"10:00", title:"Lectura o desarrollo personal", sub:"Sin presión de tiempo · Lo que más te apetezca" },
+    ]},
+    { block: "🌇 Tarde", items: [
+      { id:"we_desconexion", time:"13:00", title:"Desconexión total", sub:"Planes sociales · Naturaleza · Lo que recargue baterías · Sin gráficos" },
+    ]},
+    { block: "🌙 Noche", items: [
+      { id:"we_noche", time:"22:00", title:"Descanso", sub:"Dormir bien — mañana es domingo" },
+    ]},
+  ],
+  0: [ // Domingo
+    { block: "🌅 Mañana tranquila", items: [
+      { id:"sun_despertar", time:"08:00", title:"Despertar tranquilo", sub:"Sin alarma si puedes · Desayuno sin prisa" },
+    ]},
+    { block: "📊 Preparación de semana", items: [
+      { id:"sun_prep", time:"11:00", title:"Preparación de la semana", sub:"Calendario macro · Bias HTF semanal D1 · 3 objetivos concretos para la semana" },
+    ]},
+    { block: "🌇 Tarde", items: [
+      { id:"sun_desconexion", time:"13:00", title:"Desconexión total", sub:"No es para obsesionarse con el mercado · Llega el lunes con dirección, no con ansiedad" },
+    ]},
+    { block: "🌙 Preparar semana", items: [
+      { id:"sun_prep_semana", time:"21:00", title:"Preparar la semana", sub:"Ropa, comidas si puedes · Dormir a buena hora — el lunes empieza el domingo noche" },
+    ]},
+  ],
+};
+
+const QUOTES = [
+  "Mi trabajo hoy no es ganar dinero. Mi trabajo es ejecutar mi sistema.",
+  "Paciencia primero. Dinero después.",
+  "La disciplina de hoy es la libertad de mañana.",
+  "El trading es el vehículo. El objetivo final es construir libertad y patrimonio.",
+  "Pensar en años, no en días.",
+  "Un cuerpo fuerte ayuda a tomar mejores decisiones.",
+  "Empiezo el día con control y claridad.",
+];
+
+// ─── STATE ───────────────────────────────────────────────────────
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function loadState() { try { return JSON.parse(localStorage.getItem('traderRoutineV3') || '{}'); } catch(e) { return {}; } }
+function saveState(s) { localStorage.setItem('traderRoutineV3', JSON.stringify(s)); }
+
+let state = loadState();
+const TODAY = todayKey();
+const DOW = new Date().getDay(); // 0=Sun, 6=Sat
+const IS_WEEKEND = DOW === 0 || DOW === 6;
+if (!state[TODAY]) state[TODAY] = {};
+
+let calViewYear = new Date().getFullYear();
+let calViewMonth = new Date().getMonth();
+
+// ─── HELPERS ─────────────────────────────────────────────────────
+function getTodayItems() {
+  if (IS_WEEKEND) {
+    const wr = WEEKEND_ROUTINE[DOW] || [];
+    return wr.flatMap(b => b.items);
+  }
+  return WEEKDAY_ROUTINE.flatMap(b => b.items).filter(item => {
+    if (!item.dow) return true;
+    return item.dow.includes(DOW);
+  });
+}
+
+function getTodayTotal() { return getTodayItems().length; }
+
+function getTodayChecked() {
+  return getTodayItems().filter(item => state[TODAY] && state[TODAY][item.id]).length;
+}
+
+function getPct(key) {
+  const d = state[key];
+  if (!d || Object.keys(d).length === 0) return null;
+  const dayDow = new Date(key + 'T12:00:00').getDay();
+  const isWe = dayDow === 0 || dayDow === 6;
+  let items;
+  if (isWe) {
+    items = (WEEKEND_ROUTINE[dayDow] || []).flatMap(b => b.items);
+  } else {
+    items = WEEKDAY_ROUTINE.flatMap(b => b.items).filter(item => {
+      if (!item.dow) return true;
+      return item.dow.includes(dayDow);
+    });
+  }
+  if (!items.length) return null;
+  const checked = items.filter(i => d[i.id]).length;
+  return Math.round((checked / items.length) * 100);
+}
+
+// ─── RENDER HOY ──────────────────────────────────────────────────
+function updateHeader() {
+  const checked = getTodayChecked();
+  const total = getTodayTotal();
+  const pct = Math.round((checked / total) * 100);
+  document.getElementById('headerPct').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function renderRoutine() {
+  const list = document.getElementById('routineList');
+  list.innerHTML = '';
+
+  const blocks = IS_WEEKEND ? (WEEKEND_ROUTINE[DOW] || []) : WEEKDAY_ROUTINE;
+
+  blocks.forEach(block => {
+    const visibleItems = IS_WEEKEND ? block.items : block.items.filter(item => {
+      if (!item.dow) return true;
+      return item.dow.includes(DOW);
+    });
+    if (!visibleItems.length) return;
+
+    const sec = document.createElement('div');
+    sec.className = 'block';
+    sec.innerHTML = `<div class="block-label">${block.block}</div>`;
+
+    visibleItems.forEach(item => {
+      const done = !!(state[TODAY] && state[TODAY][item.id]);
+      const el = document.createElement('div');
+      el.className = 'item' + (done ? ' done' : '');
+      const tagHtml = item.tag ? `<div class="item-tag ${item.tagType || 'gray'}">${item.tag}</div>` : '';
+      el.innerHTML = `
+        <div class="check">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="item-body">
+          <div class="item-time">${item.time}</div>
+          <div class="item-title">${item.title}</div>
+          ${item.sub ? `<div class="item-sub">${item.sub}</div>` : ''}
+          ${tagHtml}
+        </div>`;
+      el.onclick = () => {
+        if (!state[TODAY]) state[TODAY] = {};
+        state[TODAY][item.id] = !state[TODAY][item.id];
+        saveState(state);
+        el.classList.toggle('done', state[TODAY][item.id]);
+        updateHeader();
+      };
+      sec.appendChild(el);
+    });
+    list.appendChild(sec);
+  });
+}
+
+function renderQuote() {
+  const q = QUOTES[new Date().getDay() % QUOTES.length];
+  document.getElementById('quoteText').textContent = '"' + q + '"';
+}
+
+function setDateStr() {
+  const d = new Date();
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  document.getElementById('dateStr').textContent = days[d.getDay()] + ' · ' + d.getDate() + ' de ' + months[d.getMonth()];
+  if (IS_WEEKEND) {
+    document.getElementById('weekendBadge').style.display = 'inline-block';
+    document.getElementById('headerPct').style.display = 'none';
+    document.getElementById('headerPctLabel').style.display = 'none';
+    document.getElementById('progressFill').parentElement.style.display = 'none';
+  }
+}
+
+// ─── VIEWS ───────────────────────────────────────────────────────
+function showView(v) {
+  document.getElementById('viewHoy').classList.toggle('active', v === 'hoy');
+  document.getElementById('viewHistorial').classList.toggle('active', v === 'historial');
+  document.getElementById('tabHoy').classList.toggle('active', v === 'hoy');
+  document.getElementById('tabHistorial').classList.toggle('active', v === 'historial');
+  if (v === 'historial') renderHistorial();
+}
+
+function toggleRules() {
+  document.getElementById('rulesToggle').classList.toggle('open');
+  document.getElementById('rulesBody').classList.toggle('open');
+}
+
+// ─── HISTORIAL ───────────────────────────────────────────────────
+function renderHistorial() {
+  renderCalendar();
+  renderStats();
+  renderStreakDots();
+}
+
+function changeMonth(delta) {
+  calViewMonth += delta;
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const now = new Date();
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('calMonth').textContent = monthNames[calViewMonth] + ' ' + calViewYear;
+  const firstDay = new Date(calViewYear, calViewMonth, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(calViewYear, calViewMonth+1, 0).getDate();
+  const grid = document.getElementById('dayGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < offset; i++) {
+    const el = document.createElement('div'); el.className = 'dc empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = calViewYear + '-' + String(calViewMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const cellDate = new Date(calViewYear, calViewMonth, d);
+    const cellDow = cellDate.getDay();
+    const isWeekend = cellDow === 0 || cellDow === 6;
+    const pct = getPct(key);
+    const isToday = d === now.getDate() && calViewMonth === now.getMonth() && calViewYear === now.getFullYear();
+    const isFuture = cellDate > now && !isToday;
+    const el = document.createElement('div');
+    let cls = 'dc';
+    if (isWeekend) cls += ' is-weekend';
+    if (isToday) cls += ' today';
+    else if (isFuture) cls += ' future';
+    else if (pct === null) cls += ' past-none';
+    else if (pct === 100) cls += ' past-full';
+    else cls += ' past-partial';
+    el.className = cls;
+    el.textContent = d;
+    if (pct !== null && !isToday && !isFuture) el.title = pct + '%';
+    grid.appendChild(el);
+  }
+}
+
+function renderStats() {
+  const keys = Object.keys(state).sort();
+  let full = 0, bestStreak = 0, cur = 0;
+  keys.forEach(k => {
+    const p = getPct(k);
+    if (p === 100) { full++; cur++; if (cur > bestStreak) bestStreak = cur; }
+    else cur = 0;
+  });
+  let streak = 0;
+  for (let i = keys.length - 1; i >= 0; i--) {
+    if (getPct(keys[i]) === 100) streak++;
+    else break;
+  }
+  const last30 = [];
+  const d = new Date();
+  for (let i = 0; i < 30; i++) {
+    const k = new Date(d); k.setDate(d.getDate()-i);
+    const key = k.toISOString().slice(0,10);
+    if (state[key] && Object.keys(state[key]).length > 0) last30.push(getPct(key) === 100 ? 1 : 0);
+  }
+  const rate = last30.length ? Math.round((last30.filter(x=>x).length / last30.length)*100) : null;
+  document.getElementById('statFull').textContent = full;
+  document.getElementById('statStreak').textContent = streak;
+  document.getElementById('statRate').textContent = rate !== null ? rate+'%' : '—';
+  document.getElementById('statBest').textContent = bestStreak;
+}
+
+function renderStreakDots() {
+  const dots = document.getElementById('streakDots');
+  dots.innerHTML = '';
+  const d = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const dd = new Date(d); dd.setDate(d.getDate()-i);
+    const key = dd.toISOString().slice(0,10);
+    const dow = dd.getDay();
+    const isWe = dow === 0 || dow === 6;
+    const el = document.createElement('div');
+    const pct = getPct(key);
+    if (isWe) el.className = 'streak-dot weekend';
+    else el.className = 'streak-dot' + (pct === 100 ? ' on' : '');
+    el.title = key;
+    dots.appendChild(el);
+  }
+}
+
+function closeBanner() {
+  document.getElementById('installBanner').style.display = 'none';
+  localStorage.setItem('bannerClosed','1');
+}
+
+function checkInstallBanner() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (!isStandalone && !localStorage.getItem('bannerClosed')) {
+    document.getElementById('installBanner').style.display = 'flex';
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+setDateStr();
+renderRoutine();
+renderQuote();
+if (!IS_WEEKEND) updateHeader();
+checkInstallBanner();
+</script>
+</body>
+</html>
